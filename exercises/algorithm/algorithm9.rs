@@ -2,7 +2,6 @@
 	heap
 	This question requires you to implement a binary heap function
 */
-// I AM NOT DONE
 
 use std::cmp::Ord;
 use std::default::Default;
@@ -37,7 +36,24 @@ where
     }
 
     pub fn add(&mut self, value: T) {
-        //TODO
+        // Add item to the end of the heap
+        self.items.push(value);
+        self.count += 1;
+        
+        // Heapify up
+        let mut idx = self.count;
+        while idx > 1 {
+            let parent = self.parent_idx(idx);
+            
+            // If parent should be above this item, we're done
+            if (self.comparator)(&self.items[parent], &self.items[idx]) {
+                break;
+            }
+            
+            // Otherwise, swap and continue
+            self.items.swap(parent, idx);
+            idx = parent;
+        }
     }
 
     fn parent_idx(&self, idx: usize) -> usize {
@@ -57,8 +73,25 @@ where
     }
 
     fn smallest_child_idx(&self, idx: usize) -> usize {
-        //TODO
-		0
+        // If no children, return the same index
+        if !self.children_present(idx) {
+            return idx;
+        }
+        
+        let left = self.left_child_idx(idx);
+        let right = self.right_child_idx(idx);
+        
+        // If right child doesn't exist, return left
+        if right > self.count {
+            return left;
+        }
+        
+        // Return the smaller (or larger for max heap) of the two children
+        if (self.comparator)(&self.items[left], &self.items[right]) {
+            left
+        } else {
+            right
+        }
     }
 }
 
@@ -79,13 +112,42 @@ where
 
 impl<T> Iterator for Heap<T>
 where
-    T: Default,
+    T: Default + Clone,
 {
     type Item = T;
 
     fn next(&mut self) -> Option<T> {
-        //TODO
-		None
+        if self.is_empty() {
+            return None;
+        }
+        
+        // Take the top item
+        let last_item = self.items[self.count].clone();
+        let item = std::mem::replace(&mut self.items[1], last_item);
+        self.items.pop();
+        self.count -= 1;
+        
+        // If heap is now empty, we're done
+        if self.is_empty() {
+            return Some(item);
+        }
+        
+        // Heapify down
+        let mut idx = 1;
+        while self.children_present(idx) {
+            let child = self.smallest_child_idx(idx);
+            
+            // If this item should be above the child, we're done
+            if (self.comparator)(&self.items[idx], &self.items[child]) {
+                break;
+            }
+            
+            // Otherwise, swap and continue
+            self.items.swap(idx, child);
+            idx = child;
+        }
+        
+        Some(item)
     }
 }
 

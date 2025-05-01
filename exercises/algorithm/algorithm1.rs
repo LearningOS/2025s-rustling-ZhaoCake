@@ -2,7 +2,6 @@
 	single linked list merge
 	This problem requires you to merge two ordered singly linked lists into one ordered singly linked list
 */
-// I AM NOT DONE
 
 use std::fmt::{self, Display, Formatter};
 use std::ptr::NonNull;
@@ -69,15 +68,56 @@ impl<T> LinkedList<T> {
             },
         }
     }
-	pub fn merge(list_a:LinkedList<T>,list_b:LinkedList<T>) -> Self
-	{
-		//TODO
-		Self {
-            length: 0,
-            start: None,
-            end: None,
+
+    // 修复 merge 函数，移除冗余的泛型参数 T
+    pub fn merge(
+        list_a: &LinkedList<T>,
+        list_b: &LinkedList<T>,
+    ) -> LinkedList<T> where T: Ord + Display + Clone {
+        // 创建一个新的空链表用于存储合并结果
+        let mut merged = LinkedList::new();
+        
+        // 获取两个链表的头部节点
+        let mut a_curr = list_a.start;
+        let mut b_curr = list_b.start;
+        
+        // 当两个链表都还有节点时，比较它们的值并将较小的添加到合并列表
+        while let (Some(a), Some(b)) = (a_curr, b_curr) {
+            unsafe {
+                let a_val = &(*a.as_ptr()).val;
+                let b_val = &(*b.as_ptr()).val;
+                
+                // 比较值并将较小的添加到合并列表
+                if a_val <= b_val {
+                    merged.add(a_val.clone());
+                    // 移动a_curr到下一个节点
+                    a_curr = (*a.as_ptr()).next;
+                } else {
+                    merged.add(b_val.clone());
+                    // 移动b_curr到下一个节点
+                    b_curr = (*b.as_ptr()).next;
+                }
+            }
         }
-	}
+        
+        // 处理链表a中剩余的节点
+        while let Some(a) = a_curr {
+            unsafe {
+                merged.add((*a.as_ptr()).val.clone());
+                a_curr = (*a.as_ptr()).next;
+            }
+        }
+        
+        // 处理链表b中剩余的节点
+        while let Some(b) = b_curr {
+            unsafe {
+                merged.add((*b.as_ptr()).val.clone());
+                b_curr = (*b.as_ptr()).next;
+            }
+        }
+        
+        merged
+    }
 }
 
 impl<T> Display for LinkedList<T>
@@ -102,6 +142,39 @@ where
             None => write!(f, "{}", self.val),
         }
     }
+}
+
+/*
+	binary search 
+	This problem requires you to implement a binary search algorithm
+*/
+
+pub fn binary_search<T: Ord>(array: &[T], target: &T) -> Option<usize> {
+    if array.is_empty() {
+        return None;
+    }
+
+    let mut low = 0;
+    let mut high = array.len() - 1;
+
+    while low <= high {
+        let mid = low + (high - low) / 2;
+        
+        match target.cmp(&array[mid]) {
+            std::cmp::Ordering::Equal => return Some(mid),
+            std::cmp::Ordering::Less => {
+                if mid == 0 {
+                    return None;
+                }
+                high = mid - 1;
+            },
+            std::cmp::Ordering::Greater => {
+                low = mid + 1;
+            }
+        }
+    }
+
+    None
 }
 
 #[cfg(test)]
@@ -143,7 +216,7 @@ mod tests {
 			list_b.add(vec_b[i]);
 		}
 		println!("list a {} list b {}", list_a,list_b);
-		let mut list_c = LinkedList::<i32>::merge(list_a,list_b);
+		let mut list_c = LinkedList::<i32>::merge(&list_a, &list_b);
 		println!("merged List is {}", list_c);
 		for i in 0..target_vec.len(){
 			assert_eq!(target_vec[i],*list_c.get(i as i32).unwrap());
@@ -164,7 +237,7 @@ mod tests {
 			list_b.add(vec_b[i]);
 		}
 		println!("list a {} list b {}", list_a,list_b);
-		let mut list_c = LinkedList::<i32>::merge(list_a,list_b);
+		let mut list_c = LinkedList::<i32>::merge(&list_a, &list_b);
 		println!("merged List is {}", list_c);
 		for i in 0..target_vec.len(){
 			assert_eq!(target_vec[i],*list_c.get(i as i32).unwrap());

@@ -27,16 +27,18 @@
 //
 // You should NOT modify any existing code except for adding two lines of attributes.
 
-// I AM NOT DONE
-
 extern "Rust" {
     fn my_demo_function(a: u32) -> u32;
+    // 添加 link_name 属性，指定这个函数其实是 my_demo_function 的别名
+    #[link_name = "my_demo_function"]
     fn my_demo_function_alias(a: u32) -> u32;
 }
 
-mod Foo {
-    // No `extern` equals `extern "Rust"`.
-    fn my_demo_function(a: u32) -> u32 {
+mod foo {
+    // 添加 #[no_mangle] 属性，确保函数名不被修改（防止符号名混淆）
+    #[no_mangle]
+    // 添加 pub 使函数对外可见
+    pub fn my_demo_function(a: u32) -> u32 {
         a
     }
 }

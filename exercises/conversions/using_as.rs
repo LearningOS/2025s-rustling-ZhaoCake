@@ -10,11 +10,12 @@
 // Execute `rustlings hint using_as` or use the `hint` watch subcommand for a
 // hint.
 
-// I AM NOT DONE
 
 fn average(values: &[f64]) -> f64 {
     let total = values.iter().sum::<f64>();
-    total / values.len()
+    total / values.len() as f64
+    // 添加 as f64 转换，因为 values.len() 返回的是 usize
+    // 如果不进行转换，会尝试执行 f64 / usize，这是类型不匹配的
 }
 
 fn main() {

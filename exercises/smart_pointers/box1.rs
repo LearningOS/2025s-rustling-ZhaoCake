@@ -18,11 +18,10 @@
 //
 // Execute `rustlings hint box1` or use the `hint` watch subcommand for a hint.
 
-// I AM NOT DONE
 
 #[derive(PartialEq, Debug)]
 pub enum List {
-    Cons(i32, List),
+    Cons(i32, Box<List>), // 使用Box<List>而不是List，因为这样可以解决递归类型的大小无法在编译时确定的问题
     Nil,
 }
 
@@ -35,11 +34,12 @@ fn main() {
 }
 
 pub fn create_empty_list() -> List {
-    todo!()
+    List::Nil // 创建一个空列表，直接返回Nil变体
 }
 
 pub fn create_non_empty_list() -> List {
-    todo!()
+    // 创建一个非空列表，包含1和2，最后以Nil结尾
+    List::Cons(1, Box::new(List::Cons(2, Box::new(List::Nil))))
 }
 
 #[cfg(test)]
